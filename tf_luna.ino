@@ -86,23 +86,23 @@ int measure() {
 	return dist;
 }
 
-int measure_v2() {
-	int dist = 0;	  //actual distance measurements of LiDAR
-	int strength = 0; //signal strength of LiDAR
-	float temprature = 0.f;
-	int check = 0; //save check value
-	int i = 0;
-	int uart[9];			 //save data measured by LiDAR
-	memset(uart, 0, sizeof(uart));
-	const int HEADER = 0x59; //frame header of data package
+int dist;	  //actual distance measurements of LiDAR
+int strength; //signal strength of LiDAR
+float temprature;
+int check; //save check value
+int i;
+int uart[9];			 //save data measured by LiDAR
+const int HEADER = 0x59; //frame header of data package
+//D9 led1
+//D8 led2
+//D7 led3
 
-	if (!Serial1.available()){
-		// Serial.println("!Serial1.available()");
-	} else {
-  		uart[0] = HEADER;
-	// if (Serial1.read() == HEADER) { //assess data package frame header 0x59
+int measure_v2() {
+	if (Serial1.available()){
+  uart[0] = HEADER;
+	if (Serial1.read() == HEADER) { //assess data package frame header 0x59
 		uart[0] = HEADER;
-		// if (Serial1.read() == HEADER){
+		if (Serial1.read() == HEADER){
 		//{ //assess data package frame header 0x59
 			uart[1] = HEADER;
 			for (i = 2; i < 9; i++)
@@ -116,7 +116,6 @@ int measure_v2() {
 				strength = uart[4] + uart[5] * 256;	  //calculate signal strength value
 				temprature = uart[6] + uart[7] * 256; //calculate chip temprature
 				temprature = temprature / 8 - 256;
-				/*
 				Serial.print("dist = ");
 				Serial.print(dist); //output measure distance value of LiDAR
 				Serial.print('\t');
@@ -126,15 +125,18 @@ int measure_v2() {
 				Serial.print("\t Chip Temprature = ");
 				Serial.print(temprature);
 				Serial.println(" celcius degree"); //output chip temperature of Lidar
-				*/
 			}
 		}
+	}
+}
 
+/*
 	int reed = Serial1.read();
 
 	char output[1024];
 	sprintf(output, "dist %d; strength %d; temp %d; check %d; i %d; reed %d;", dist, strength, temprature, check, i, reed);
 	Serial.println(output);
+	*/
 
 	return dist;
 }
