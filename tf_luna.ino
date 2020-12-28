@@ -116,6 +116,7 @@ int measure_v2() {
 				strength = uart[4] + uart[5] * 256;	  //calculate signal strength value
 				temprature = uart[6] + uart[7] * 256; //calculate chip temprature
 				temprature = temprature / 8 - 256;
+				/*
 				Serial.print("dist = ");
 				Serial.print(dist); //output measure distance value of LiDAR
 				Serial.print('\t');
@@ -125,18 +126,17 @@ int measure_v2() {
 				Serial.print("\t Chip Temprature = ");
 				Serial.print(temprature);
 				Serial.println(" celcius degree"); //output chip temperature of Lidar
+				*/
 			}
 		}
 	}
 }
 
-/*
 	int reed = Serial1.read();
 
 	char output[1024];
 	sprintf(output, "dist %d; strength %d; temp %d; check %d; i %d; reed %d;", dist, strength, temprature, check, i, reed);
 	Serial.println(output);
-	*/
 
 	return dist;
 }
