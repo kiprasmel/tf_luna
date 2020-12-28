@@ -287,8 +287,8 @@ void setup() {
 }
 
 void loop() {
-	int distance = measure_v2();
-	config1.draw(distance);
+	// int distance = measure_v2();
+	// config1.draw(distance);
 
 	/*
 	int fake_distance = 3000 - (millis() % 3000);
@@ -304,5 +304,39 @@ void loop() {
 		config1.undraw();
 	}
 	*/
+
+	if (Serial1.available()){
+  uart[0] = HEADER;
+	if (Serial1.read() == HEADER) { //assess data package frame header 0x59
+		uart[0] = HEADER;
+		if (Serial1.read() == HEADER){
+		//{ //assess data package frame header 0x59
+			uart[1] = HEADER;
+			for (i = 2; i < 9; i++)
+			{ //save data in array
+				uart[i] = Serial1.read();
+			}
+			check = uart[0] + uart[1] + uart[2] + uart[3] + uart[4] + uart[5] + uart[6] + uart[7];
+			if (uart[8] == (check & 0xff))
+			{										  //verify the received data as per protocol
+				dist = uart[2] + uart[3] * 256;//256		  //calculate distance value
+				strength = uart[4] + uart[5] * 256;	  //calculate signal strength value
+				temprature = uart[6] + uart[7] * 256; //calculate chip temprature
+				temprature = temprature / 8 - 256;
+				Serial.print("dist = ");
+				Serial.print(dist); //output measure distance value of LiDAR
+				Serial.print('\t');
+
+				Serial.print("strength = ");
+				Serial.print(strength); //output signal strength value
+				Serial.print("\t Chip Temprature = ");
+				Serial.print(temprature);
+				Serial.println(" celcius degree"); //output chip temperature of Lidar
+			}
+		}
+	}
+}
+
+	config1.draw(dist);
 }
 
