@@ -2,6 +2,7 @@
 
 SoftwareSerial Serial1(2, 3); //define software serial port name as Serial1 and define pin2 as RX and pin3
 
+
 /** BEGIN UTILS */
 
 void setPinsToMode(uint8_t pins[], size_t pins_length, int mode) {
@@ -16,130 +17,6 @@ void setLEDBrightness(uint8_t pin, uint8_t LED_brightness) {
 	digitalWrite(pin, LED_brightness != 0 ? HIGH : LOW); // TODO actual brightness
 }
 
-int measure() {
-	//if (distance >=20 and distance < 50){ledstate = HIGH;}
-	// else ledState = LOW;}
-	//digitalWrite(ledPin,LedState);
-
-	//as TX
-	/* For Arduinoboards with multiple serial ports like DUEboard, interpret above two pieces of code and
-	directly use Serial1 serial port*/
-	int dist = 0;	  //actual distance measurements of LiDAR
-	int strength = 0; //signal strength of LiDAR
-	float temprature = 0.f;
-	int check = 0; //save check value
-	int i = 0;
-	int uart[9];			 //save data measured by LiDAR
-	memset(uart, 0, sizeof(uart));
-	const int HEADER = 0x59; //frame header of data package
-
-	if (false && !Serial1.available()) {
-		// Serial.println("!Serial1.available()");
-	} else {
-		uart[0] = HEADER;
-
-		if (false && Serial1.read() != HEADER) { //assess data package frame header 0x59
-			Serial.println("(depth 1) Serial1.read() != HEADER");
-		} else {
-			uart[0] = HEADER;
-
-			if (Serial1.read() == HEADER) {
-				Serial.println("(depth 2) Serial1.read() != HEADER");
-			} else {
-				//{ //assess data package frame header 0x59
-				uart[1] = HEADER;
-
-				for (i = 2; i < 9; i++) { //save data in array
-					uart[i] = Serial1.read();
-				}
-
-				check = uart[0] + uart[1] + uart[2] + uart[3] + uart[4] + uart[5] + uart[6] + uart[7];
-
-				if (false && uart[8] != (check & 0xff)) {	//verify the received data as per protocol
-					Serial.println("uart[8] != (check & 0xff)");
-				} else {
-					dist = uart[2] + uart[3] * 256; //256		  //calculate distance value
-					strength = uart[4] + uart[5] * 256;	  //calculate signal strength value
-					temprature = uart[6] + uart[7] * 256; //calculate chip temprature
-					temprature = temprature / 8 - 256;
-
-					/*
-					Serial.print("dist = ");
-					Serial.print(dist); //output measure distance value of LiDAR
-					Serial.print('\t');
-	
-					Serial.print("strength = ");
-					Serial.print(strength); //output signal strength value
-					Serial.print("\t Chip Temprature = ");
-					Serial.print(temprature);
-					Serial.println(" celcius degree"); //output chip temperature of Lidar
-					*/
-				}
-			}
-		}
-	} 
-
-	char output[1024];
-	sprintf(output, "dist %d; strength %d; temp %d; check %d; i %d;", dist, strength, temprature, check, i);
-	Serial.println(output);
-
-	return dist;
-}
-
-int dist;	  //actual distance measurements of LiDAR
-int strength; //signal strength of LiDAR
-float temprature;
-int check; //save check value
-int i;
-int uart[9];			 //save data measured by LiDAR
-const int HEADER = 0x59; //frame header of data package
-//D9 led1
-//D8 led2
-//D7 led3
-
-int measure_v2() {
-	if (Serial1.available()){
-  uart[0] = HEADER;
-	if (Serial1.read() == HEADER) { //assess data package frame header 0x59
-		uart[0] = HEADER;
-		if (Serial1.read() == HEADER){
-		//{ //assess data package frame header 0x59
-			uart[1] = HEADER;
-			for (i = 2; i < 9; i++)
-			{ //save data in array
-				uart[i] = Serial1.read();
-			}
-			check = uart[0] + uart[1] + uart[2] + uart[3] + uart[4] + uart[5] + uart[6] + uart[7];
-			if (uart[8] == (check & 0xff))
-			{										  //verify the received data as per protocol
-				dist = uart[2] + uart[3] * 256;//256		  //calculate distance value
-				strength = uart[4] + uart[5] * 256;	  //calculate signal strength value
-				temprature = uart[6] + uart[7] * 256; //calculate chip temprature
-				temprature = temprature / 8 - 256;
-				/*
-				Serial.print("dist = ");
-				Serial.print(dist); //output measure distance value of LiDAR
-				Serial.print('\t');
-
-				Serial.print("strength = ");
-				Serial.print(strength); //output signal strength value
-				Serial.print("\t Chip Temprature = ");
-				Serial.print(temprature);
-				Serial.println(" celcius degree"); //output chip temperature of Lidar
-				*/
-			}
-		}
-	}
-}
-
-	int reed = Serial1.read();
-
-	char output[1024];
-	sprintf(output, "dist %d; strength %d; temp %d; check %d; i %d; reed %d;", dist, strength, temprature, check, i, reed);
-	Serial.println(output);
-
-	return dist;
-}
 
 /** END UTILS */
 
@@ -180,7 +57,21 @@ struct Config {
 	Range ranges[MAX_RANGE_COUNT];
 
 	void init() {
-		setPinsToMode(LED_pins, pin_count, OUTPUT);
+		/**
+		 * TODO FIXME INVESTIGATE BROKEN:
+		 *
+		 * If we call `setPinsToMode`, **all* LEDs turn on and **do not** react
+		 * like they're supposed to;
+		 *
+		 * If we don't -- it just works! Wtf?
+		 *
+		*/
+
+		/** BEGIN DISABLE */
+
+		// setPinsToMode(LED_pins, pin_count, OUTPUT);
+
+		/** END DISABLE */
 
 		if (pin_count > MAX_LED_COUNT) {
 			// throw "MAX_LED_COUNT smaller than pin_count -- increase MAX_LED_COUNT";
@@ -279,6 +170,21 @@ Config config1 = {
 
 /** END CONFIGS FOR MAIN PROGRAM */
 
+//as TX
+/* For Arduinoboards with multiple serial ports like DUEboard, interpret above two pieces of code and
+directly use Serial1 serial port*/
+int dist;			//actual distance measurements of LiDAR
+int strength; //signal strength of LiDAR
+float temprature;
+int check; //save check value
+int i;
+int uart[9];			 //save data measured by LiDAR
+const int HEADER = 0x59; //frame header of data package
+//D9 led1
+//D8 led2
+//D7 led3
+
+
 void setup() {
 	Serial.begin(9600);	   //set bit rate of serial port connecting Arduino with computer
 	Serial1.begin(115200); //set bit rate of serial port connecting LiDAR with Arduino
@@ -287,23 +193,6 @@ void setup() {
 }
 
 void loop() {
-	// int distance = measure_v2();
-	// config1.draw(distance);
-
-	/*
-	int fake_distance = 3000 - (millis() % 3000);
-	config1.draw(fake_distance);
-	*/
-
-	/*
-	int distance = measure();
-
-	if (millis() % 1000 < 300) {
-		config1.draw(distance);
-	} else {
-		config1.undraw();
-	}
-	*/
 
 	if (Serial1.available()){
   uart[0] = HEADER;

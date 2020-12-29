@@ -6,15 +6,15 @@ SoftwareSerial Serial1(2, 3); //define software serial port name as Serial1 and 
 /** BEGIN UTILS */
 
 void setPinsToMode(uint8_t pins[], size_t pins_length, int mode) {
-  // assert(mode == INPUT || mode == OUTPUT);
+		// assert(mode == INPUT || mode == OUTPUT);
 
-  for (size_t i = 0; i < pins_length; i++) {
-    pinMode(pins[i], mode);
-  }
+		for (size_t i = 0; i < pins_length; i++) {
+				pinMode(pins[i], mode);
+		}
 }
 
 void setLEDBrightness(uint8_t pin, uint8_t LED_brightness) {
-  digitalWrite(pin, LED_brightness != 0 ? HIGH : LOW); // TODO actual brightness
+		digitalWrite(pin, LED_brightness != 0 ? HIGH : LOW); // TODO actual brightness
 }
 
 
@@ -23,68 +23,68 @@ void setLEDBrightness(uint8_t pin, uint8_t LED_brightness) {
 /** BEGIN STRUCTS & FUNCTIONS FOR MAIN PROGRAM */
 
 /** increase these if needed but beware to not exceed the max memory */
-#define MAX_LED_COUNT   16
+#define MAX_LED_COUNT		 16
 #define MAX_RANGE_COUNT 16
 
 struct Range {
-  size_t from;   /** from specified to 0, unless a smaller range is provided */
-  uint8_t LEDs[MAX_LED_COUNT];
-  
-  static Range find_matching_by_distance(Range ranges[], size_t ranges_length, size_t distance) {
-    Range candidate;
+		size_t from;		 /** from specified to 0, unless a smaller range is provided */
+		uint8_t LEDs[MAX_LED_COUNT];
+		
+		static Range find_matching_by_distance(Range ranges[], size_t ranges_length, size_t distance) {
+				Range candidate;
 
-    for (size_t i = 0; i < ranges_length; i++) {
-      Range current = ranges[i];
-      
-      if (distance <= current.from) {
-        candidate = current;
-      } else if (distance > current.from) {
-        break;
-      } else {
-        // assert(false);
-      }
-    }
+				for (size_t i = 0; i < ranges_length; i++) {
+						Range current = ranges[i];
+						
+						if (distance <= current.from) {
+								candidate = current;
+						} else if (distance > current.from) {
+								break;
+						} else {
+								// assert(false);
+						}
+				}
 
-    return candidate;
-  }
+				return candidate;
+		}
 };
 
 struct Config {
-  size_t pin_count;
-  size_t range_count;
+		size_t pin_count;
+		size_t range_count;
 
-  uint8_t LED_pins[MAX_LED_COUNT]; /** shall match the shape of a single LED array */
-  Range ranges[MAX_RANGE_COUNT];
+		uint8_t LED_pins[MAX_LED_COUNT]; /** shall match the shape of a single LED array */
+		Range ranges[MAX_RANGE_COUNT];
 
-  void init() {
-    setPinsToMode(LED_pins, pin_count, OUTPUT);
+		void init() {
+				setPinsToMode(LED_pins, pin_count, OUTPUT);
 
-    if (pin_count > MAX_LED_COUNT) {
-      // throw "MAX_LED_COUNT smaller than pin_count -- increase MAX_LED_COUNT";
-    }
+				if (pin_count > MAX_LED_COUNT) {
+						// throw "MAX_LED_COUNT smaller than pin_count -- increase MAX_LED_COUNT";
+				}
 
-    if (range_count > MAX_RANGE_COUNT) {
-      // throw "MAX_RANGE_COUNT smaller than pin_count -- increase MAX_RANGE_COUNT";
-    }
-  }
+				if (range_count > MAX_RANGE_COUNT) {
+						// throw "MAX_RANGE_COUNT smaller than pin_count -- increase MAX_RANGE_COUNT";
+				}
+		}
 
-  void draw(size_t distance) {
-    Range matching_range = Range::find_matching_by_distance(ranges, range_count, distance);
+		void draw(size_t distance) {
+				Range matching_range = Range::find_matching_by_distance(ranges, range_count, distance);
 
-    for (size_t i = 0; i < pin_count; i++) {
-      uint8_t pin = LED_pins[i];
-      uint8_t LED = matching_range.LEDs[i];
-      
-      setLEDBrightness(pin, LED);
-    }
-  }
+				for (size_t i = 0; i < pin_count; i++) {
+						uint8_t pin = LED_pins[i];
+						uint8_t LED = matching_range.LEDs[i];
+						
+						setLEDBrightness(pin, LED);
+				}
+		}
 
-  void undraw() {
-    for (size_t i = 0; i < pin_count; i++) {
-      uint8_t pin = LED_pins[i];
-      setLEDBrightness(pin, 0);
-    }
-  }
+		void undraw() {
+				for (size_t i = 0; i < pin_count; i++) {
+						uint8_t pin = LED_pins[i];
+						setLEDBrightness(pin, 0);
+				}
+		}
 };
 
 /** END STRUCTS & FUNCTIONS FOR MAIN PROGRAM */
@@ -92,66 +92,66 @@ struct Config {
 /** BEGIN CONFIGS FOR MAIN PROGRAM */
 
 Config config1 = {
-  .pin_count = 9, /** shall not exceed MAX_LED_COUNT */
+		.pin_count = 9, /** shall not exceed MAX_LED_COUNT */
 
-  .range_count = 11, /** shall not exceed MAX_RANGE_COUNT */
+		.range_count = 11, /** shall not exceed MAX_RANGE_COUNT */
 
-  .LED_pins = {
-    1, 2, 3,
-    4, 5, 6,
-    7, 8, 9
+		.LED_pins = {
+				1, 2, 3,
+				4, 5, 6,
+				7, 8, 9
 
-    /** don't forget to update pin_count */
-  },
+				/** don't forget to update pin_count */
+		},
 
-  .ranges = {
-    /*  from        LEDs             */
-        9000,       {   0,   0,   0,
-                        0,   0,   0,
-                        0,   0,   0 },
-    
-         100,       { 128,   0,   0,
-                        0,   0,   0,
-                        0,   0,   0 },
-    
-          90,       { 255, 128,   0,
-                        0,   0,   0,
-                        0,   0,   0 },
-    
-          80,       { 255, 255, 128,
-                        0,   0,   0,
-                        0,   0,   0 },
-    
-          70,       { 255, 255, 255,
-                        0,   0, 128,
-                        0,   0,   0 },
-    
-          60,       { 255, 255, 255,
-                        0,   0, 255,
-                        0,   0, 128 },
-    
-          50,       { 255, 255, 255,
-                        0,   0, 255,
-                        0, 128, 255 },
-    
-          45,       { 255, 255, 255,
-                        0,   0, 255,
-                      128, 255, 255 },
-    
-          40,       { 255, 255, 255,
-                      128,   0, 255,
-                      255, 255, 255 },
-    
-          35,       { 255, 255, 255,
-                      255, 128, 255,
-                      255, 255, 255 },
-    
-          30,       { 255, 255, 255,
-                      255, 255, 255,
-                      255, 255, 255 }
+		.ranges = {
+				/*		from								LEDs												 */
+								9000,						 {		 0,		 0,		 0,
+																								0,		 0,		 0,
+																								0,		 0,		 0 },
+				
+								 100,						 { 128,		 0,		 0,
+																								0,		 0,		 0,
+																								0,		 0,		 0 },
+				
+										90,						 { 255, 128,		 0,
+																								0,		 0,		 0,
+																								0,		 0,		 0 },
+				
+										80,						 { 255, 255, 128,
+																								0,		 0,		 0,
+																								0,		 0,		 0 },
+				
+										70,						 { 255, 255, 255,
+																								0,		 0, 128,
+																								0,		 0,		 0 },
+				
+										60,						 { 255, 255, 255,
+																								0,		 0, 255,
+																								0,		 0, 128 },
+				
+										50,						 { 255, 255, 255,
+																								0,		 0, 255,
+																								0, 128, 255 },
+				
+										45,						 { 255, 255, 255,
+																								0,		 0, 255,
+																						128, 255, 255 },
+				
+										40,						 { 255, 255, 255,
+																						128,		 0, 255,
+																						255, 255, 255 },
+				
+										35,						 { 255, 255, 255,
+																						255, 128, 255,
+																						255, 255, 255 },
+				
+										30,						 { 255, 255, 255,
+																						255, 255, 255,
+																						255, 255, 255 }
 
-     /** don't forget to update range_count */
-  }
+				 /** don't forget to update range_count */
+		}
 };
 
 /** END CONFIGS FOR MAIN PROGRAM *
@@ -159,7 +159,7 @@ Config config1 = {
 //as TX
 /* For Arduinoboards with multiple serial ports like DUEboard, interpret above two pieces of code and
 directly use Serial1 serial port*/
-int dist;	  //actual distance measurements of LiDAR
+int dist;			//actual distance measurements of LiDAR
 int strength; //signal strength of LiDAR
 float temprature;
 int check; //save check value
@@ -174,7 +174,7 @@ const int HEADER = 0x59; //frame header of data package
 void setup()
 {
 
-	Serial.begin(9600);	   //set bit rate of serial port connecting Arduino with computer
+	Serial.begin(9600);			 //set bit rate of serial port connecting Arduino with computer
 	Serial1.begin(115200); //set bit rate of serial port connecting LiDAR with Arduino
 }
 void loop()
@@ -182,7 +182,7 @@ void loop()
 	
 
 	if (Serial1.available()){
-  uart[0] = HEADER;
+		uart[0] = HEADER;
 	if (Serial1.read() == HEADER) { //assess data package frame header 0x59
 		uart[0] = HEADER;
 		if (Serial1.read() == HEADER){
@@ -194,9 +194,9 @@ void loop()
 			}
 			check = uart[0] + uart[1] + uart[2] + uart[3] + uart[4] + uart[5] + uart[6] + uart[7];
 			if (uart[8] == (check & 0xff))
-			{										  //verify the received data as per protocol
-				dist = uart[2] + uart[3] * 256;//256		  //calculate distance value
-				strength = uart[4] + uart[5] * 256;	  //calculate signal strength value
+			{												//verify the received data as per protocol
+				dist = uart[2] + uart[3] * 256;//256				//calculate distance value
+				strength = uart[4] + uart[5] * 256;			//calculate signal strength value
 				temprature = uart[6] + uart[7] * 256; //calculate chip temprature
 				temprature = temprature / 8 - 256;
 				Serial.print("dist = ");
@@ -213,5 +213,5 @@ void loop()
 	}
 }
 
-  config1.draw(dist);
+		config1.draw(dist);
 }
